@@ -35,7 +35,7 @@ pytest -v --cov=. --cov-report=term-missing --cov-report=html
 open htmlcov/index.html
 ```
 
---
+---
 
 
 # Отчёт по тестированию проекта Habr Crawler
