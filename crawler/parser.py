@@ -39,6 +39,8 @@ def parse(html: str, base_url: str) -> ParseResult:
             continue
 
         abs_url = urljoin(base_url, href)
+        if not abs_url.startswith("http://") and not abs_url.startswith("https://"):
+            continue
         norm_url = normalize_url(abs_url)
         is_internal = is_internal_url(norm_url)
 

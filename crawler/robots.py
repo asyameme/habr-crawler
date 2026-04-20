@@ -22,6 +22,7 @@ class RobotsChecker:
                 logger.info(f"Robots.txt loaded for {host}")
             except Exception as e:
                 logger.warning(f"Failed to fetch robots.txt for {host}: {e}")
+                rp.allow_all = True
             self._parsers[host] = rp
         return self._parsers[host]
 

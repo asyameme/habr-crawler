@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 SEED_URLS = [
     f"https://habr.com/ru/hubs/machine_learning/articles/page{i}/"
-    for i in range(1, 20)
+    for i in range(21, 100)
 ]
 
 
