@@ -32,25 +32,29 @@ pip install -r requirements.txt
 ```
 ## **Настройка**
 Создать файл .env в корне проекта:
-
+```bash
 DATABASE_URL=postgresql://user:password@localhost:5432/craulerdb
 MAX_DEPTH=2
 HABR_RATE_LIMIT_SEC=10
 DEFAULT_TIMEOUT=30
 MAX_PAGES=1000
-
+```
 ## Использование
 
 ### Загрузить стартовые URL (533 страницы хаба ML)
+```bash
 python main.py seed
-
+```
 ### Запустить краулер
+```bash
 python main.py crawl --max-pages 1000
-
+```
 ### Посмотреть статистику
+```bash
 python main.py stats
-
+```
 ## Архитектура
+```bash
 habr_crawler/
 ├── models/          # SQLAlchemy-модели (5 таблиц)
 ├── crawler/         # Ядро краулера
@@ -66,13 +70,13 @@ habr_crawler/
 │   └── stats.py     # Статистический отчёт
 ├── alembic/         # Миграции БД
 └── main.py          # CLI entry point
-
+```
 ## Модель данных
-urls — реестр всех известных URL
-frontier — очередь обхода (priority BFS)
-pages — скачанные страницы с метаданными
-links — связи между страницами (anchor text, internal/external)
-fetch_attempts — история попыток скачивания
+- urls — реестр всех известных URL
+- frontier — очередь обхода (priority BFS)
+- pages — скачанные страницы с метаданными
+- links — связи между страницами (anchor text, internal/external)
+- fetch_attempts — история попыток скачивания
 
 
 ---
