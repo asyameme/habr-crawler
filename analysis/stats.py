@@ -12,8 +12,8 @@ def show_stats(session: Session):
     article_count = session.execute(text("""
         SELECT count(*) FROM pages p
         JOIN urls u ON p.url_id = u.id
-        WHERE u.url SIMILAR TO '%/ru/articles/[0-9]+/%'
-           OR u.url SIMILAR TO '%/ru/companies/%/articles/[0-9]+/%'
+        WHERE u.url LIKE '%/ru/articles/%'
+           OR u.url LIKE '%/ru/companies/%/articles/%'
     """)).scalar()
 
     total = session.execute(text("SELECT count(*) FROM pages")).scalar()
@@ -26,8 +26,8 @@ def show_stats(session: Session):
         SELECT l.is_internal, count(*) FROM links l
         JOIN pages p ON l.from_page_id = p.id
         JOIN urls u ON p.url_id = u.id
-        WHERE u.url SIMILAR TO '%/ru/articles/[0-9]+/%'
-           OR u.url SIMILAR TO '%/ru/companies/%/articles/[0-9]+/%'
+        WHERE u.url LIKE '%/ru/articles/%'
+           OR u.url LIKE '%/ru/companies/%/articles/%'
         GROUP BY l.is_internal
     """)).fetchall()
     for row in links_by_type:
@@ -47,8 +47,8 @@ def show_stats(session: Session):
         JOIN urls u1 ON p.url_id = u1.id
         JOIN urls u2 ON l.to_url_id = u2.id
         WHERE l.is_internal = False
-          AND (u1.url SIMILAR TO '%/ru/articles/[0-9]+/%'
-               OR u1.url SIMILAR TO '%/ru/companies/%/articles/[0-9]+/%')
+          AND (u1.url LIKE '%/ru/articles/%'
+               OR u1.url LIKE '%/ru/companies/%/articles/%')
         GROUP BY u2.host ORDER BY cnt DESC LIMIT 10
     """)).fetchall()
     for i, row in enumerate(top10_external_hosts, 1):
@@ -61,8 +61,8 @@ def show_stats(session: Session):
         JOIN pages p ON l.from_page_id = p.id
         JOIN urls u ON p.url_id = u.id
         WHERE l.anchor_text != ''
-          AND (u.url SIMILAR TO '%/ru/articles/[0-9]+/%'
-               OR u.url SIMILAR TO '%/ru/companies/%/articles/[0-9]+/%')
+          AND (u.url LIKE '%/ru/articles/%'
+               OR u.url LIKE '%/ru/companies/%/articles/%')
         GROUP BY l.anchor_text ORDER BY cnt DESC LIMIT 10
     """)).fetchall()
     for i, row in enumerate(top_anchors, 1):
@@ -91,8 +91,8 @@ def show_stats(session: Session):
         FROM links l
         JOIN pages p ON l.from_page_id = p.id
         JOIN urls u ON p.url_id = u.id
-        WHERE u.url SIMILAR TO '%/ru/articles/[0-9]+/%'
-           OR u.url SIMILAR TO '%/ru/companies/%/articles/[0-9]+/%'
+        WHERE u.url LIKE '%/ru/articles/%'
+           OR u.url LIKE '%/ru/companies/%/articles/%'
         GROUP BY p.title ORDER BY cnt DESC LIMIT 10
     """)).fetchall()
     for i, row in enumerate(top_articles, 1):

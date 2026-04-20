@@ -5,7 +5,7 @@ import httpx
 from config import DEFAULT_TIMEOUT, HABR_RATE_LIMIT_SEC
 from fake_useragent import UserAgent
 from urllib.parse import urlparse
-from .robots import RobotsChecker
+from .robots import is_allowed
 
 
 
@@ -48,7 +48,7 @@ class FetchResult:
 ua = UserAgent()
 logger = logging.getLogger(__name__)
 rate_limiter = RateLimiter()
-robots_checker = RobotsChecker()
+
 
 
 
@@ -56,7 +56,7 @@ def fetch(url: str) -> FetchResult:
     start = time.time()
     headers = {"User-Agent": ua.random}
     try:
-        if not robots_checker.is_allowed(url):
+        if not is_allowed(url):
             return FetchResult(final_url=url, error="Blocked by robots.txt")
         rate_limiter.wait_if_needed(url=url)
 

@@ -3,21 +3,9 @@ from types import SimpleNamespace
 import httpx
 
 from crawler.fetcher import FetchResult, RateLimiter, fetch
-from crawler.robots import RobotsChecker
+from crawler.robots import is_allowed
 from crawler import storage
 from models import Frontier, Page, FetchAttempt, Link
-
-
-class DummyRobotParser:
-    def __init__(self, allowed=True):
-        self.allowed = allowed
-        self.parsed_lines = None
-
-    def parse(self, lines):
-        self.parsed_lines = list(lines)
-
-    def can_fetch(self, user_agent, url):
-        return self.allowed
 
 
 class DummyResponse:
@@ -29,18 +17,18 @@ class DummyResponse:
         self.content = content
 
 
-def test_robots_checker_fetches_and_caches_parser(monkeypatch):
-    calls = []
-    parser = DummyRobotParser(allowed=True)
+def test_is_allows_habr_articles():
+    assert is_allowed('https://habr.com/ru/articles/1/') is True
+    assert is_allowed('https://habr.com/ru/articles/2/') is True
 
-    monkeypatch.setattr('crawler.robots.robotparser.RobotFileParser', lambda: parser)
-    monkeypatch.setattr('crawler.robots.httpx.get', lambda *a, **k: calls.append((a, k)) or DummyResponse(text='User-agent: *\nAllow: /'))
 
-    checker = RobotsChecker()
-    assert checker.is_allowed('https://habr.com/ru/articles/1/') is True
-    assert checker.is_allowed('https://habr.com/ru/articles/2/') is True
-    assert len(calls) == 1
-    assert parser.parsed_lines == ['User-agent: *', 'Allow: /']
+def test_is_blocks_disallowed_paths():
+    assert is_allowed('https://habr.com/search/') is False
+    assert is_allowed('https://habr.com/api/') is False
+
+
+def test_is_blocks_non_habr():
+    assert is_allowed('https://example.com/ru/articles/1/') is False
 
 
 def test_rate_limiter_waits_only_when_needed(monkeypatch):
@@ -58,7 +46,7 @@ def test_rate_limiter_waits_only_when_needed(monkeypatch):
 
 def test_fetch_returns_successful_html_result(monkeypatch):
     monkeypatch.setattr('crawler.fetcher.ua', SimpleNamespace(random='ua'))
-    monkeypatch.setattr('crawler.fetcher.robots_checker', SimpleNamespace(is_allowed=lambda url: True))
+    monkeypatch.setattr('crawler.fetcher.is_allowed', lambda url: True)
     monkeypatch.setattr('crawler.fetcher.rate_limiter', SimpleNamespace(wait_if_needed=lambda url: None))
     monkeypatch.setattr('crawler.fetcher.time.time', lambda: 100.0)
     monkeypatch.setattr('crawler.fetcher.httpx.get', lambda *a, **k: DummyResponse(headers={'content-type': 'text/html; charset=utf-8'}, content=b'<html>x</html>', text='<html>x</html>', url='https://habr.com/final'))
@@ -74,7 +62,7 @@ def test_fetch_returns_successful_html_result(monkeypatch):
 
 def test_fetch_handles_request_errors(monkeypatch):
     monkeypatch.setattr('crawler.fetcher.ua', SimpleNamespace(random='ua'))
-    monkeypatch.setattr('crawler.fetcher.robots_checker', SimpleNamespace(is_allowed=lambda url: True))
+    monkeypatch.setattr('crawler.fetcher.is_allowed', lambda url: True)
     monkeypatch.setattr('crawler.fetcher.rate_limiter', SimpleNamespace(wait_if_needed=lambda url: None))
     monkeypatch.setattr('crawler.fetcher.httpx.get', lambda *a, **k: (_ for _ in ()).throw(httpx.RequestError('boom')))
 

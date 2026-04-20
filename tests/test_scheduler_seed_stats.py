@@ -78,7 +78,7 @@ def test_show_stats_prints_core_sections(session, capsys):
 
     show_stats(session)
     out = capsys.readouterr().out
-    assert 'Всего обработано 1 уникальных страниц' in out
+    assert 'Всего страниц: 1' in out
     assert 'Топ-10 внешних доменов' in out
     assert 'HTTP-статусы' in out
     assert 'Article 1' in out

@@ -25,6 +25,9 @@ def get_or_create_url(session: Session, url: str) -> Url:
     
     parsed = urlparse(norm_url)
 
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError(f"Unsupported URL scheme: {parsed.scheme}")
+
     new_url = Url(
         url=norm_url,
         scheme=parsed.scheme,
