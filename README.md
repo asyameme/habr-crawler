@@ -1,21 +1,83 @@
+# Habr ML Crawler
 
-## 🚀 Запуск проекта
+Тематический веб-краулер для обхода статей Хабра по машинному обучению с анализом внутренних и внешних ссылок.
+
+## Возможности
+
+- Автоматический обход статей хаба «Машинное обучение» на Хабре
+- Извлечение заголовков, описаний, текста и ссылок из статей
+- Разделение ссылок на внутренние (habr.com) и внешние
+- Дедупликация URL и контента (SHA-256)
+- Соблюдение robots.txt и ограничение частоты запросов (rate limiting)
+- Повторные попытки при ошибках с exponential backoff
+- Статистический отчёт по ссылочному профилю статей
+
+## Стек технологий
+
+- **Python 3.12+**
+- **httpx** — HTTP-клиент
+- **BeautifulSoup 4 + lxml** — HTML-парсинг
+- **PostgreSQL 16** — хранение данных
+- **SQLAlchemy 2.0** — ORM
+- **Alembic** — миграции БД
+
+## Установка
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+git clone https://github.com/asyameme/habr-crawler.git
+cd habr-crawler
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
+## **Настройка**
+Создать файл .env в корне проекта:
 
-### Запуск краулера
+DATABASE_URL=postgresql://user:password@localhost:5432/craulerdb
+MAX_DEPTH=2
+HABR_RATE_LIMIT_SEC=10
+DEFAULT_TIMEOUT=30
+MAX_PAGES=1000
 
-```bash
-python main.py
-```
+## Использование
+
+### Загрузить стартовые URL (533 страницы хаба ML)
+python main.py seed
+
+### Запустить краулер
+python main.py crawl --max-pages 1000
+
+### Посмотреть статистику
+python main.py stats
+
+## Архитектура
+habr_crawler/
+├── models/          # SQLAlchemy-модели (5 таблиц)
+├── crawler/         # Ядро краулера
+│   ├── seed.py      # Загрузка стартовых URL
+│   ├── scheduler.py # Диспетчер очереди (priority BFS)
+│   ├── fetcher.py   # HTTP-скачивание + rate limit
+│   ├── parser.py    # HTML-парсинг (BeautifulSoup)
+│   ├── dedup.py     # Нормализация URL + фильтрация
+│   ├── robots.py    # Проверка robots.txt
+│   ├── storage.py   # Операции записи в БД
+│   └── engine.py    # Основной цикл
+├── analysis/
+│   └── stats.py     # Статистический отчёт
+├── alembic/         # Миграции БД
+└── main.py          # CLI entry point
+
+## Модель данных
+urls — реестр всех известных URL
+frontier — очередь обхода (priority BFS)
+pages — скачанные страницы с метаданными
+links — связи между страницами (anchor text, internal/external)
+fetch_attempts — история попыток скачивания
+
 
 ---
 
-## 🧪 Запуск тестов
+## Запуск тестов
 
 ### Все тесты
 
@@ -40,7 +102,7 @@ open htmlcov/index.html
 
 # Отчёт по тестированию проекта Habr Crawler
 
-## 📊 Результаты запуска pytest
+## Результаты запуска pytest
 
 | Всего тестов | Покрытие |
 |-------------|----------|
@@ -74,7 +136,7 @@ open htmlcov/index.html
 
 ---
 
-## 📊 Покрытие по модулям
+## Покрытие по модулям
 
 | Модуль | Строк кода | Не покрытые строки | Покрытие |
 |--------|-----------|-------------------|----------|
